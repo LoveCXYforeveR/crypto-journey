@@ -1,0 +1,21 @@
+{
+  "algorithm": "SM4",
+  "standard": "GB/T 32907-2016",
+  "source": "国密算法学习包_SM3_SM4_SM2/5_机器可读（S 盒与常量）及国标标准向量",
+  "note": "标准向量与一百万次迭代向量均取自 GB/T 32907-2016 附录（密钥与明文同为 0123456789abcdeffedcba9876543210）。",
+  "vectors": [
+    {
+      "name": "standard_vector",
+      "key_hex": "0123456789abcdeffedcba9876543210",
+      "plain_hex": "0123456789abcdeffedcba9876543210",
+      "cipher_hex": "681edf34d206965e86b3e94f536e4246"
+    },
+    {
+      "name": "one_million_iterations",
+      "key_hex": "0123456789abcdeffedcba9876543210",
+      "plain_hex": "0123456789abcdeffedcba9876543210",
+      "iterations": 1000000,
+      "cipher_hex": "595298c7c6fd271f0402f804c33d3f66"
+    }
+  ]
+}

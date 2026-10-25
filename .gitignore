@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.key
+
+# 演示输出目录整体忽略，仅保留 README 引用的那张图
+# 注意: 必须先重新纳入父目录 (demo/output/)，文件级 ! 例外才会生效
+demo/output/*
+!demo/output/ecb_demo.png
