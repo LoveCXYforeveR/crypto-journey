@@ -5,9 +5,6 @@ CC      ?= gcc
 CFLAGS  ?= -O2 -Wall -Wextra -std=c11
 LDFLAGS ?=
 
-# 编译时把 gcc 版本号注入 bench 输出
-COMPILER_STR := $(shell $(CC) --version | head -n1)
-
 SRCS_LIB  = sm4.c
 OBJS_LIB  = $(SRCS_LIB:.c=.o)
 
@@ -22,7 +19,7 @@ test_sm4: test_sm4.o $(OBJS_LIB)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 bench: bench.o $(OBJS_LIB)
-	$(CC) $(CFLAGS) -DSM4_COMPILER="\"$(COMPILER_STR)\"" -o $@ $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 test: test_sm4
 	./test_sm4

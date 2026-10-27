@@ -64,14 +64,19 @@ int main(void)
     };
     uint8_t block[16] = {0};
     uint8_t out[16];
+    static volatile unsigned char sink;  /* prevent loop elision */
 
     printf("=== SM4 C benchmark ===\n");
-#ifdef SM4_COMPILER
-    printf("compiler: %s\n", SM4_COMPILER);
+#ifdef __VERSION__
+    printf("compiler: %s\n", __VERSION__);
 #else
     printf("compiler: (unknown)\n");
 #endif
-    printf("flags:    -O2\n");
+#ifdef __OPTIMIZE__
+    printf("flags:    optimized (__OPTIMIZE__ set), see Makefile for exact flags\n");
+#else
+    printf("flags:    NO OPTIMIZATION (debug build) — numbers not comparable\n");
+#endif
     printf("key:      0123456789abcdeffedcba9876543210\n");
     printf("block:    all-zero\n");
     printf("blocks:   %d\n", (int)BENCH_BLOCKS);
@@ -95,6 +100,7 @@ int main(void)
         double t0 = now_sec();
         for (int i = 0; i < BENCH_BLOCKS; i++) {
             sm4_encrypt_block(key, block, out);
+            sink ^= out[0];
         }
         times_a[t] = now_sec() - t0;
     }
@@ -107,6 +113,7 @@ int main(void)
         double t0 = now_sec();
         for (int i = 0; i < BENCH_BLOCKS; i++) {
             sm4_crypt_block_rks(rks, block, out);
+            sink ^= out[0];
         }
         times_b[t] = now_sec() - t0;
     }
@@ -121,10 +128,6 @@ int main(void)
     printf("\nraw trial seconds: A=[%.4f, %.4f, %.4f]  B=[%.4f, %.4f, %.4f]\n",
            times_a[0], times_a[1], times_a[2],
            times_b[0], times_b[1], times_b[2]);
-
-    /* 防优化器把循环吃掉：如果 out 全 0，说明可能被优化掉了 */
-    if (out[0] == 0 && out[1] == 0) {
-        fprintf(stderr, "warning: output looks zero — loop may have been optimized out\n");
-    }
+    (void)sink;
     return 0;
 }
