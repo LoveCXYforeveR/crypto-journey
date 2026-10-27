@@ -286,6 +286,76 @@ static int run_decrypt_roundtrip(void)
     return fails;
 }
 
+/* 解密已知密文：用国标密文解密，必须还原出国标明文。
+ * 这是外部锚点（GB/T 32907-2016），不是自洽性测试。 */
+static int run_decrypt_known_vector(void)
+{
+    const char *key_hex = "0123456789abcdeffedcba9876543210";
+    const char *ct_hex   = "681edf34d206965e86b3e94f536e4246";
+    const char *expect_hex = "0123456789abcdeffedcba9876543210";
+    uint8_t key[16], ct[16], pt[16], expected[16];
+    if (hex_decode(key_hex, key, 16) != 16) return 1;
+    if (hex_decode(ct_hex, ct, 16) != 16) return 1;
+    if (hex_decode(expect_hex, expected, 16) != 16) return 1;
+    sm4_decrypt_block(key, ct, pt);
+    int ok = (memcmp(pt, expected, 16) == 0);
+    printf("decrypt_known_vector:    %s\n", ok ? "PASS" : "FAIL");
+    return ok ? 0 : 1;
+}
+
+/* 多 key 自洽性测试：这三组期望值来自本仓库 src/sm4.py，
+ * 验证的是「C 与 Python 一致」，不是外部标准向量。 */
+static int run_multikey_vectors(void)
+{
+    static const struct {
+        const char *key_hex;
+        const char *pt_hex;
+        const char *ct_hex;
+    } cases[] = {
+        {"0123456789abcdeffedcba9876543210", "00000000000000000000000000000000", "2677f46b09c122cc975533105bd4a22a"},
+        {"ffffffffffffffffffffffffffffffff", "00000000000000000000000000000000", "e28f2c531ed6183dd16487c1614710e6"},
+        {"00000000000000000000000000000000", "0123456789abcdeffedcba9876543210", "29c8bccac865d43db25596e2b59be9af"},
+    };
+    int fails = 0, passed = 0;
+    for (size_t i = 0; i < sizeof(cases)/sizeof(cases[0]); i++) {
+        uint8_t key[16], pt[16], ct[16], expect[16];
+        if (hex_decode(cases[i].key_hex, key, 16) != 16) { fails++; continue; }
+        if (hex_decode(cases[i].pt_hex, pt, 16) != 16) { fails++; continue; }
+        if (hex_decode(cases[i].ct_hex, expect, 16) != 16) { fails++; continue; }
+        sm4_encrypt_block(key, pt, ct);
+        if (memcmp(ct, expect, 16) == 0) passed++;
+        else fails++;
+    }
+    printf("multikey_vectors: %d/%d        %s\n", passed, (int)(sizeof(cases)/sizeof(cases[0])),
+           fails == 0 ? "PASS" : "FAIL");
+    return fails;
+}
+
+/* key_schedule 可复用性：同一 key 两次调用结果相同（无隐藏状态），
+ * 且 sm4_encrypt_block == key_schedule + crypt_block_rks。 */
+static int run_key_schedule_reuse(void)
+{
+    const char *key_hex = "0123456789abcdeffedcba9876543210";
+    const char *pt_hex  = "0123456789abcdeffedcba9876543210";
+    uint8_t key[16], pt[16];
+    if (hex_decode(key_hex, key, 16) != 16) return 1;
+    if (hex_decode(pt_hex, pt, 16) != 16) return 1;
+
+    uint32_t rks1[32], rks2[32];
+    sm4_key_schedule(key, rks1);
+    sm4_key_schedule(key, rks2);
+    int rks_same = (memcmp(rks1, rks2, sizeof(rks1)) == 0);
+
+    uint8_t out1[16], out2[16];
+    sm4_encrypt_block(key, pt, out1);
+    sm4_crypt_block_rks(rks1, pt, out2);
+    int output_same = (memcmp(out1, out2, 16) == 0);
+
+    int ok = rks_same && output_same;
+    printf("key_schedule_reuse:       %s\n", ok ? "PASS" : "FAIL");
+    return ok ? 0 : 1;
+}
+
 int main(void)
 {
     const char *vec_path = "../data/vectors/sm4_vectors.json";
@@ -325,6 +395,9 @@ int main(void)
     }
 
     fails += run_pairs(pairs_path);
+    fails += run_decrypt_known_vector();
+    fails += run_multikey_vectors();
+    fails += run_key_schedule_reuse();
     fails += run_decrypt_roundtrip();
 
     printf("----\n");
