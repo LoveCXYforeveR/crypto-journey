@@ -195,8 +195,11 @@ static int run_pairs(const char *pairs_path)
     long len = 0;
     char *text = slurp_file(pairs_path, &len);
     if (!text) {
-        printf("pairs.json not found at %s — skipping cross-check\n", pairs_path);
-        return 0; /* 不算失败，只是没跑 */
+        fprintf(stderr,
+            "\n*** WARNING: %s not found — cross-check SKIPPED ***\n"
+            "*** (this test is meaningless without it; run: python tools/gen_pairs.py)\n\n",
+            pairs_path);
+        return 0;
     }
 
     char key_hex[64] = {0};
@@ -286,7 +289,7 @@ static int run_decrypt_roundtrip(void)
 int main(void)
 {
     const char *vec_path = "../data/vectors/sm4_vectors.json";
-    const char *pairs_path = "../work/pairs.json";
+    const char *pairs_path = "../data/vectors/sm4_pairs.json";
 
     long len = 0;
     char *text = slurp_file(vec_path, &len);
