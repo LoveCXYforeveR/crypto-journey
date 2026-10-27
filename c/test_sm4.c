@@ -364,7 +364,10 @@ int main(void)
     long len = 0;
     char *text = slurp_file(vec_path, &len);
     if (!text) {
-        fprintf(stderr, "cannot open %s\n", vec_path);
+        fprintf(stderr,
+            "cannot open %s\n"
+            "hint: this test uses relative paths — run it from the c/ directory:\n"
+            "      cd c && ./test_sm4\n", vec_path);
         return 2;
     }
 

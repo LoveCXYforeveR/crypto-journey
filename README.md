@@ -37,6 +37,8 @@ pytest
 
 全部测试应通过。跳过耗时用例用 `pytest -m "not slow"`（约 2 秒）。
 
+C 版测试：`cd c && make test`（注意必须从 c/ 目录运行，测试用相对路径读取国标向量）。
+
 ## ECB 模式演示
 
 ![ECB](demo/output/ecb_demo.png)
@@ -98,6 +100,8 @@ CBC 的 IV / CTR 的 nonce 在加密时随机生成并写入密文文件头 16 �
 **测试条件**：CPU Intel Core Ultra 7 251HX / OS Windows 11（build 26200）/
 编译器 gcc 16.2.0（MSYS2 UCRT64）/ 优化 `-O2` / 1,000,000 block / block 全 0 / 3 次中位数。
 OpenSSL 行取自 `openssl speed -evp sm4-ecb` 的 16 字节列。
+绝对值来自单次测量，随机器负载与频率状态波动约 ±10%（复跑得到 A 57.4 / B 116.8 MB/s，
+比值 ~2.0 一致）。判断结论只看**比值**，不看绝对值。
 
 **怎么读这张表**：
 - C 版把 Python 的解释器开销摊掉后快了 **222–408 倍**——这是纯语言层面对比，

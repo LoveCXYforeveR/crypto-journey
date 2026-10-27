@@ -10,7 +10,7 @@ OBJS_LIB  = $(SRCS_LIB:.c=.o)
 
 .PHONY: all test bench clean
 
-all: test_sm4 bench
+all: test_sm4
 
 %.o: %.c sm4.h constants.h
 	$(CC) $(CFLAGS) -c $< -o $@
