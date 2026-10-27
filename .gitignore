@@ -4,6 +4,16 @@ __pycache__/
 .pytest_cache/
 *.key
 
+# 本地临时脚本与生成物（常量表生成、pairs.json、Python 基准）——不进仓库
+work/
+
+# C 版编译产物
+c/*.o
+c/test_sm4
+c/test_sm4.exe
+c/bench
+c/bench.exe
+
 # 演示输出目录整体忽略，仅保留 README 引用的那张图
 # 注意: 必须先重新纳入父目录 (demo/output/)，文件级 ! 例外才会生效
 demo/output/*
