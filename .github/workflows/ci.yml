@@ -38,5 +38,5 @@ jobs:
         run: |
           set -e
           cd c
-          make CC=gcc CFLAGS="-O2 -Wall -Wextra -std=c11"
+          make CC=gcc CFLAGS="-O2 -Wall -Wextra -std=c11" test_sm4
           ./test_sm4
